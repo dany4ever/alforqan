@@ -160,6 +160,15 @@ public class dbDAL extends SQLiteOpenHelper {
 	 * Get all the suras names
 	 * @return String array contains all the suras names
 	 */
+	public int getSuraNumOfAyas(int suraNum){
+		int suraNumOfAyas;
+		Cursor myCursor = null;   //cursor to hold the data returned from the DB
+		myCursor = myDataBase.rawQuery("SELECT ayas from suras where _id = " + Integer.toString(suraNum),new String[]{}); // get the num of ayas from the DB
+		myCursor.moveToNext();// go to the result in the cursor
+		suraNumOfAyas= myCursor.getInt(0);  // put the number in the variable
+		return suraNumOfAyas;  // return the names to the caller
+	}
+	
 	public String[] getSurasNames(){
 		String[] surasNames = new String[114]; //string array containing the names
 		Cursor myCursor = null;   //cursor to hold the data returned from the DB
@@ -171,7 +180,6 @@ public class dbDAL extends SQLiteOpenHelper {
 		}
 		return surasNames;  // return the names to the caller
 	}
-	
 	public Cursor getDBRowById(int id){
 		Cursor myCursor = null;
 		myCursor = myDataBase.rawQuery("SELECT * from quran_text where _id = " + Integer.toString(id),new String[]{});

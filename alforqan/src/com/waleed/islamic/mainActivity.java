@@ -4,6 +4,7 @@ package com.waleed.islamic;
  * 'imports
  */
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,6 +43,10 @@ public class mainActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
+		// get the values passed from the splach activity
+				suraNamesStrings = getIntent().getExtras().getStringArray("surasNames"); // get suras names
+				ayaNumStrings = getIntent().getExtras().getStringArray("suraAyas"); // get ayas of a sura (numbers not text)
+				
 		// Initialize gui components
 		initializeGui();
 	}
