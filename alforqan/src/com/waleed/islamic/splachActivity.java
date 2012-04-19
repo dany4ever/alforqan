@@ -13,6 +13,7 @@ public class splachActivity extends Activity {
 	
 	//class glopal fields
 	String[] surasNames;
+	String[] numOfSurasAyas;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -33,9 +34,15 @@ public class splachActivity extends Activity {
 							tempDB.createDataBase(); // if not exists, create the database and
 														// copy the original one to it
 							tempDB.openDataBase(); // opens the DB
+							// Get the suras names
 							surasNames = tempDB.getSurasNames();
-							String st = surasNames[0];
-							String en = surasNames[113];
+							// Get the num of ayas in the current sura (initially the first sura)
+							int count = tempDB.getSuraNumOfAyas(1); // al-fatiha
+							// fill the array with ayas in the sura
+							numOfSurasAyas = new String[count];
+							for(int i = 0; i < count; i++){
+								numOfSurasAyas[i] = Integer.toString(i + 1);
+							}
 							// close the DB
 							tempDB.close();
 						} catch (IOException e) {
@@ -65,7 +72,10 @@ public class splachActivity extends Activity {
 						// start the main activity and finish this activity thread
 						Intent mainActivityIntent = new Intent(
 								"com.waleed.islamic.alforqan.MAINACTIVITY");
-						startActivity(mainActivityIntent);
+						// put the data in the intent to be passed to the main activity
+						mainActivityIntent.putExtra("surasNames", surasNames); // put suras names
+						mainActivityIntent.putExtra("suraAyas", numOfSurasAyas);  // put the sura ayas numbers array
+						startActivity(mainActivityIntent); // starting the activity
 					} catch (Exception e) {
 					}
 				}
