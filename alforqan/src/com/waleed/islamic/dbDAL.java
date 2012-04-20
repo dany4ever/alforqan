@@ -180,10 +180,33 @@ public class dbDAL extends SQLiteOpenHelper {
 		}
 		return surasNames;  // return the names to the caller
 	}
+	
+	/**
+	 * get a row from the quran_text table with the given _id
+	 * @param id : the _id of the row
+	 * @return a cursor containing the returned data
+	 */
 	public Cursor getDBRowById(int id){
 		Cursor myCursor = null;
 		myCursor = myDataBase.rawQuery("SELECT * from quran_text where _id = " + Integer.toString(id),new String[]{});
 		return myCursor;
 	}
-
+	/**
+	 * return the text of the aya
+	 * @param suraNum : the sura number as a string
+	 * @param ayaNum : the aya number as a string
+	 * @return A string containing the aya text
+	 */
+	public String getAyaText(String suraNum, String ayaNum){
+		Cursor myCursor = null;
+		String ayaText = "";
+		try{
+			myCursor = myDataBase.rawQuery("SELECT text from quran_text where sura = " + suraNum + " and aya = " + ayaNum,new String[]{});
+			myCursor.moveToNext();
+			ayaText = myCursor.getString(0);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return ayaText;
+	}
 }
