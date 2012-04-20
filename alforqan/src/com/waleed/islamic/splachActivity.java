@@ -4,10 +4,10 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteCursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 
 public class splachActivity extends Activity {
 	
@@ -19,6 +19,11 @@ public class splachActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// set the full screen mode
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+		// set the contents of the view
 		setContentView(R.layout.splach);
 
 		// make instance from the used objects
