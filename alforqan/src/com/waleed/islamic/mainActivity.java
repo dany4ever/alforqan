@@ -5,6 +5,7 @@ package com.waleed.islamic;
  */
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -33,8 +34,10 @@ public class mainActivity extends Activity implements OnClickListener,
 	// buttons
 	Button collapseButton;
 	// image buttons
-	ImageButton quranTextPlusZoomButton;
-	ImageButton quranTextMinusZoomButton;
+	ImageButton quranTextPlusZoomButton;  // zoom in button
+	ImageButton quranTextMinusZoomButton;  // zoom out button
+	ImageButton soundPlayImageButton;  // play button
+	ImageButton soundPauseImageButton;  // pause button
 	// text views
 	TextView quranDisplayTextView;
 	// Edit texts
@@ -74,17 +77,9 @@ public class mainActivity extends Activity implements OnClickListener,
 		setContentView(R.layout.main);
 
 		// get the values passed from the splach activity
-		suraNamesStrings = getIntent().getExtras().getStringArray("surasNames"); // get
-																					// suras
-																					// names
-		ayaNumStrings = getIntent().getExtras().getStringArray("suraAyas"); // get
-																			// ayas
-																			// of
-																			// a
-																			// sura
-																			// (numbers
-																			// not
-																			// text)
+		suraNamesStrings = getIntent().getExtras().getStringArray("surasNames"); // get suras names
+		ayaNumStrings = getIntent().getExtras().getStringArray("suraAyas"); // get ayas of a sura (numbers
+																			// not text)
 
 		// Initialize gui components
 		initializeGui();
@@ -96,6 +91,8 @@ public class mainActivity extends Activity implements OnClickListener,
 		collapseButton = (Button) findViewById(R.id.collapseToggleButton);
 		quranTextPlusZoomButton = (ImageButton) findViewById(R.id.quranTextZoomPlusButton);
 		quranTextMinusZoomButton = (ImageButton) findViewById(R.id.quranTextZoomMinusButton);
+		soundPlayImageButton = (ImageButton) findViewById(R.id.playButton);
+		soundPauseImageButton = (ImageButton) findViewById(R.id.pauseButton);
 		// Text views
 		quranDisplayTextView = (TextView) findViewById(R.id.quranDisplayTextView);
 		// Spinners
@@ -125,6 +122,9 @@ public class mainActivity extends Activity implements OnClickListener,
 		initializeAdapter(startAyaAdapter, ayaNumStrings);
 		initializeAdapter(endAyaAdapter, ayaNumStrings);
 		initializeAdapter(stopPeriodAdapter, stopPeriodsStrings);
+		
+		// initialize ControlClass
+		ControlClass.initializeControlClass(this);
 
 		// add adapters to spinners
 		suraSelectSpinner.setAdapter(suraNameAdapter);
@@ -139,6 +139,8 @@ public class mainActivity extends Activity implements OnClickListener,
 		// buttons listeners
 		quranTextPlusZoomButton.setOnClickListener(this);
 		quranTextMinusZoomButton.setOnClickListener(this);
+		soundPlayImageButton.setOnClickListener(this);
+		soundPauseImageButton.setOnClickListener(this);
 		// sliding drawer listeners
 		settingsSlidingDrawer.setOnDrawerOpenListener(this);
 		settingsSlidingDrawer.setOnDrawerCloseListener(this);
@@ -168,31 +170,35 @@ public class mainActivity extends Activity implements OnClickListener,
 			quranTextSize--;
 			quranDisplayTextView.setTextSize(quranTextSize);
 			break;
+		// sound play button event
+		case R.id.playButton:
+			ControlClass.setSshikh("minshawi/");  // set shikh
+			ControlClass.testMethod("2", "2", 1);
+			break;
+		// sound pause button event
+		case R.id.pauseButton:
+			ControlClass.setSshikh("minshawi/"); // set shikh
+			ControlClass.testMethod("2", "2", 2);
+			break;
 		}
 	}
 
 	@Override
 	public void onDrawerClosed() {
 		mainPartLayout.setVisibility(0); // else show the main part
-		collapseButton.setText(R.string.collapse_button_collapsed); // write
-																	// suitable
-																	// text to
-																	// the
-																	// button
+		collapseButton.setText(R.string.collapse_button_collapsed); // write suitable text to the button
 		// getting the values entered by the user
 		suraNameIndex = suraSelectSpinner.getSelectedItemPosition();
 		startAya = startAyaSelectSpinner.getSelectedItemPosition();
 		endAya = endAyaSelectSpinner.getSelectedItemPosition();
 		stopPeriod = stopPeriodSelectSpinner.getSelectedItemPosition();
 		if (ayaRepeatNumEditText.getText().toString().length() != 0) { // check if left blank
-			ayaRepeat = Integer.parseInt(ayaRepeatNumEditText.getText()
-					.toString());
+			ayaRepeat = Integer.parseInt(ayaRepeatNumEditText.getText().toString());
 		}else{
 			ayaRepeat = 0; // default is no repeat
 		}
 		if (groupRepeatNumEditText.getText().toString().length() != 0) { // check if left blank
-			groupRepeat = Integer.parseInt(groupRepeatNumEditText.getText()
-					.toString());
+			groupRepeat = Integer.parseInt(groupRepeatNumEditText.getText().toString());
 		}else{
 			groupRepeat = 0; // default is no repeat
 		}
@@ -200,16 +206,33 @@ public class mainActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onDrawerOpened() {
-		// TODO test-to be removed
-		ControlClass.initializeControlClass(this, "alforqan/minshawi/");
-		ControlClass.getAyaText("1", "3");
 		// main method job
 		mainPartLayout.setVisibility(4); // hide the main part
-		collapseButton.setText(R.string.collapse_button_folded); // write
-																	// suitable
-																	// text to
-																	// the
-																	// button
+		collapseButton.setText(R.string.collapse_button_folded); // write suitable text to the button
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
+	 * this will respond to the hardware volume buttons
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		boolean success = true;
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_VOLUME_UP:
+			// audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+			// AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
+			success = true;
+			break;
+		case KeyEvent.KEYCODE_VOLUME_DOWN:
+			// audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+			// AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
+			success = true;
+			break;
+		default:
+			success = false;
+		}
+		return success;
+	}
+	
 }

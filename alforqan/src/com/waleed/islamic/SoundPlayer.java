@@ -3,33 +3,39 @@
  */
 package com.waleed.islamic;
 
-import java.io.IOException;
+import java.security.acl.LastOwnerException;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 
 /**
  * @author waleed0
  * This class will be responsible of the sound playing control
  */
-public class SoundPlayer {
+public class SoundPlayer implements OnCompletionListener {
 	
 	/**
 	 * locals
 	 */
 	private MediaPlayer usedPlayer;
 	private boolean paused;
+	private boolean opened;
 	private int soundPosition;
+	private static String oldPath; // the path of the last opened file to compare with
 	
 	/**
 	 * default constructor, initialize the object
 	 */
 	public SoundPlayer(Context callingActivityContext){
 		paused = false;
+		opened = false;
 		soundPosition = 0;
 		usedPlayer = new MediaPlayer();
 		usedPlayer.create(callingActivityContext, Uri.EMPTY);
+		// set the player completion listener to play the next sound
+		usedPlayer.setOnCompletionListener(this);
 	}
 	
 	/**
@@ -43,9 +49,12 @@ public class SoundPlayer {
 		if(usedPlayer.isPlaying()){
 			usedPlayer.stop();  // stop the currently playing file
 			usedPlayer.release();  // release the current file
+			opened = false;
 		}
 		try {
 			usedPlayer.setDataSource(filePath);
+			opened = true;
+			oldPath = filePath;
 		} catch (Exception e) {
 			success = false;
 			e.printStackTrace();
@@ -65,6 +74,7 @@ public class SoundPlayer {
 		}
 		try{
 			usedPlayer.release();  // release the current file
+			opened = false;
 		}catch(Exception e){
 			success = false;
 			e.printStackTrace();
@@ -81,17 +91,23 @@ public class SoundPlayer {
 	 */
 	public boolean playSoundFile(String filePath) {
 		boolean success = true;
+		if(!opened){  // open file if not opened
+			openSoundFile(filePath);
+		}else if(!filePath.equals(oldPath)){
+			oldPath = filePath;
+			openSoundFile(filePath);
+		}
 		try {
-			if (openSoundFile(filePath)) {
-				usedPlayer.prepare();
+			if (paused) { // file was paused
 				usedPlayer.start();
-				if (paused) { // file was paused
-					usedPlayer.seekTo(soundPosition); // continue from previous
-														// position
-					paused = false;
-				}
+													// position
+				soundPosition = 0; // reset position to zero
+				paused = false;
 			}else{
-				success = false;
+				if (!usedPlayer.isPlaying()) {
+					usedPlayer.prepare();
+					usedPlayer.start();
+				}
 			}
 		} catch (Exception e) {
 			success = false;
@@ -110,7 +126,6 @@ public class SoundPlayer {
 		if(usedPlayer.isPlaying()){
 			try{
 				paused = true;  // set pause flag
-				soundPosition = usedPlayer.getCurrentPosition(); // stores the current position
 				usedPlayer.pause();  // release the current file
 			}catch(Exception e){
 				paused = false;  // reset pause flag
@@ -152,4 +167,9 @@ public class SoundPlayer {
 		}
 		return success;
 	}
+
+	@Override
+	public void onCompletion(MediaPlayer arg0) {
+		// TODO Auto-generated method stub
+	}	
 }
