@@ -4,13 +4,14 @@
 package com.waleed.islamic;
 
 import android.content.Context;
-import android.media.MediaPlayer;
-import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 
 /**
  * @author waleed0
- * this class will control the sound and text diplay operations,
+ * this class will control the sound and text display operations,
  * it will contain static members, so we don't need objects from it
  */
 public class ControlClass {
@@ -20,6 +21,7 @@ public class ControlClass {
 	private static SoundPlayer usedSoundPlayer;
 	private static dbDAL usedDBDAL;
 	private static String baseDirectory;
+	public static boolean paused;
 	private static String soundFolderInSD = ""; // holds the application folder in the SD card, this folder contains
 												// all application sounds
 	
@@ -74,6 +76,48 @@ public class ControlClass {
 		}
 		filePath +=  suraNum + ayaNum + ".mp3";
 		return filePath;
+	}
+	
+	/**
+	 * play the quran sound with the selected settings
+	 * @param suraIndex : the index of the selected sura
+	 * @param startAya : the aya to start from
+	 * @param endAya : the aya to end with
+	 * @param stopPeriod : the stop period between two successive sounds in multiples of aya period
+	 *  zero indicates no stop
+	 * @param ayaRepeat : number of times to successively repeat one aya
+	 * @param qroupRepeat : the number of times to repeat all the aya group
+	 * @return a boolean indicates whether the operation completed successfully or not
+	 */
+	public static boolean playWithSelectedSettings(int suraIndex, int startAya,
+			int endAya, int stopPeriod, int ayaRepeat, int qroupRepeat, Thread thisThread, Handler usedHandler) {
+		boolean success = true;
+		String filePath;
+		String ayaText;
+		Bundle usedBundle = new Bundle();
+		Message msg;
+		// main method function
+		for (int groupIndex = 0; groupIndex <= qroupRepeat; groupIndex++) { // group repeating loop
+			for (int currentAya = startAya; currentAya <= endAya; currentAya++) { // loop at all ayas
+				filePath = constructAyaSoundFilePath(Integer.toString(suraIndex), Integer.toString(currentAya));
+				ayaText = getAyaText(Integer.toString(suraIndex), Integer.toString(currentAya));
+				usedBundle.clear();
+				usedBundle.putString("text", ayaText);
+				msg = new Message();
+				msg.setData(usedBundle);
+				usedHandler.sendMessage(msg);
+				for (int ayaRepeatIndex = 0; ayaRepeatIndex <= ayaRepeat; ayaRepeatIndex++) { // aya repeating loop
+					usedSoundPlayer.playSoundFile(filePath);
+						try {
+							thisThread.sleep((usedSoundPlayer.soundFilePeriod + 10) * stopPeriod);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				}
+			}
+		}
+		return success;
 	}
 	
 	// TODO test only-remove

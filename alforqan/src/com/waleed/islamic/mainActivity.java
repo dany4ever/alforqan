@@ -5,6 +5,8 @@ package com.waleed.islamic;
  */
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -40,9 +42,10 @@ public class mainActivity extends Activity implements OnClickListener,
 	ImageButton soundPauseImageButton;  // pause button
 	// text views
 	TextView quranDisplayTextView;
-	// Edit texts
+	// Edit texts & text views
 	EditText ayaRepeatNumEditText;
 	EditText groupRepeatNumEditText;
+	TextView quranTextDisplayTextView;
 	// spinners
 	Spinner suraSelectSpinner;
 	Spinner startAyaSelectSpinner;
@@ -61,9 +64,21 @@ public class mainActivity extends Activity implements OnClickListener,
 					"3 x طول الاية", "4 x طول الاية" };
 	// variables
 	float quranTextSize;
+	boolean paused;
+	// handler
+	final Handler usedHandler = new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			String text = msg.getData().getString("text");
+			quranDisplayTextView.setText(text);
+		}
+	};
+	
 	// user entered values
 	int suraNameIndex = 0, startAya = 0, endAya = 0, stopPeriod = 0,
 			ayaRepeat = 0, groupRepeat = 0;
+	// sound playing thread
+	Thread dbHandlingThread;
 
 	// Called when activity is first created
 	@Override
@@ -104,9 +119,10 @@ public class mainActivity extends Activity implements OnClickListener,
 		settingsSlidingDrawer = (SlidingDrawer) findViewById(R.id.settingsSlidingDrawer);
 		// layouts
 		mainPartLayout = (LinearLayout) findViewById(R.id.mainBlock);
-		// Edit views
+		// Edit views & text views
 		ayaRepeatNumEditText = (EditText) findViewById(R.id.ayarepeatenteryEditText);
 		groupRepeatNumEditText = (EditText) findViewById(R.id.grouprepeatenteryEditText);
+		quranTextDisplayTextView = (TextView) findViewById(R.id.quranDisplayTextView);
 
 		// initialize spinners adapters
 		suraNameAdapter = new ArrayAdapter<String>(this,
@@ -114,8 +130,7 @@ public class mainActivity extends Activity implements OnClickListener,
 		startAyaAdapter = new ArrayAdapter<String>(this,
 				R.layout.textviewlayout);
 		endAyaAdapter = new ArrayAdapter<String>(this, R.layout.textviewlayout);
-		stopPeriodAdapter = new ArrayAdapter<String>(this,
-				R.layout.textviewlayout);
+		stopPeriodAdapter = new ArrayAdapter<String>(this, R.layout.textviewlayout);
 
 		// initialize every adapter with a string
 		initializeAdapter(suraNameAdapter, suraNamesStrings);
@@ -125,7 +140,10 @@ public class mainActivity extends Activity implements OnClickListener,
 		
 		// initialize ControlClass
 		ControlClass.initializeControlClass(this);
-
+		
+		// Initialize thread pause indicator
+		paused = false;
+		
 		// add adapters to spinners
 		suraSelectSpinner.setAdapter(suraNameAdapter);
 		startAyaSelectSpinner.setAdapter(startAyaAdapter);
@@ -173,12 +191,29 @@ public class mainActivity extends Activity implements OnClickListener,
 		// sound play button event
 		case R.id.playButton:
 			ControlClass.setSshikh("minshawi/");  // set shikh
-			ControlClass.testMethod("2", "2", 1);
+			// check if thread paused
+			if(paused){
+				dbHandlingThread.notify();
+				paused = false;
+			}
+			// initialize the sound playing thread
+			dbHandlingThread = new Thread(){
+				@Override
+				public void run() {
+					ControlClass.playWithSelectedSettings(suraNameIndex + 1, startAya + 1, endAya + 1, stopPeriod + 1, ayaRepeat, groupRepeat, this, usedHandler);
+				}
+				
+			};
+			dbHandlingThread.start();
+			//ControlClass.playWithSelectedSettings(suraNameIndex + 1, startAya + 1, endAya + 1, stopPeriod, ayaRepeat, groupRepeat);
+			//ControlClass.testMethod("2", "2", 1);
 			break;
 		// sound pause button event
 		case R.id.pauseButton:
-			ControlClass.setSshikh("minshawi/"); // set shikh
-			ControlClass.testMethod("2", "2", 2);
+			if(dbHandlingThread != null){
+				 // Pause the thread
+				paused = true;
+			}
 			break;
 		}
 	}
@@ -188,6 +223,13 @@ public class mainActivity extends Activity implements OnClickListener,
 		mainPartLayout.setVisibility(0); // else show the main part
 		collapseButton.setText(R.string.collapse_button_collapsed); // write suitable text to the button
 		// getting the values entered by the user
+		getEnteredValues();
+	}
+
+	/**
+	 * getting the values entered by the user
+	 */
+	private void getEnteredValues() {
 		suraNameIndex = suraSelectSpinner.getSelectedItemPosition();
 		startAya = startAyaSelectSpinner.getSelectedItemPosition();
 		endAya = endAyaSelectSpinner.getSelectedItemPosition();
@@ -219,12 +261,16 @@ public class mainActivity extends Activity implements OnClickListener,
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		boolean success = true;
 		switch (keyCode) {
-		case KeyEvent.KEYCODE_VOLUME_UP:
+		case KeyEvent.KEYCODE_BACK:  // back button, close the program
+			this.finish();
+			success = true;
+			break;
+		case KeyEvent.KEYCODE_VOLUME_UP: // volume up event
 			// audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
 			// AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
 			success = true;
 			break;
-		case KeyEvent.KEYCODE_VOLUME_DOWN:
+		case KeyEvent.KEYCODE_VOLUME_DOWN:  // volume down event
 			// audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
 			// AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
 			success = true;
@@ -234,5 +280,7 @@ public class mainActivity extends Activity implements OnClickListener,
 		}
 		return success;
 	}
+	
+	
 	
 }
