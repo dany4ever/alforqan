@@ -3,18 +3,18 @@
  */
 package com.waleed.islamic;
 
-import java.security.acl.LastOwnerException;
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 
 /**
  * @author waleed0
  * This class will be responsible of the sound playing control
  */
-public class SoundPlayer implements OnCompletionListener {
+public class SoundPlayer implements OnPreparedListener{
 	
 	/**
 	 * locals
@@ -22,8 +22,9 @@ public class SoundPlayer implements OnCompletionListener {
 	private MediaPlayer usedPlayer;
 	private boolean paused;
 	private boolean opened;
-	private int soundPosition;
-	private static String oldPath; // the path of the last opened file to compare with
+	public long soundFilePeriod;
+	private volatile boolean preparingComplete;
+	private String oldPath; // the path of the last opened file to compare with
 	
 	/**
 	 * default constructor, initialize the object
@@ -31,11 +32,12 @@ public class SoundPlayer implements OnCompletionListener {
 	public SoundPlayer(Context callingActivityContext){
 		paused = false;
 		opened = false;
-		soundPosition = 0;
+		soundFilePeriod = 0;
+		preparingComplete = false;
 		usedPlayer = new MediaPlayer();
 		usedPlayer.create(callingActivityContext, Uri.EMPTY);
 		// set the player completion listener to play the next sound
-		usedPlayer.setOnCompletionListener(this);
+		usedPlayer.setOnPreparedListener(this);
 	}
 	
 	/**
@@ -48,16 +50,18 @@ public class SoundPlayer implements OnCompletionListener {
 		paused = false;
 		if(usedPlayer.isPlaying()){
 			usedPlayer.stop();  // stop the currently playing file
-			usedPlayer.release();  // release the current file
 			opened = false;
 		}
 		try {
+			usedPlayer.reset();
 			usedPlayer.setDataSource(filePath);
+			usedPlayer.prepare();
+			preparingComplete = false;
 			opened = true;
 			oldPath = filePath;
-		} catch (Exception e) {
-			success = false;
-			e.printStackTrace();
+		} catch(Exception e){
+				success = false;
+				e.printStackTrace();
 		}
 		return success;
 	}
@@ -73,7 +77,8 @@ public class SoundPlayer implements OnCompletionListener {
 			usedPlayer.stop();  // stop the currently playing file
 		}
 		try{
-			usedPlayer.release();  // release the current file
+			usedPlayer.prepare();  // re-preparing the player
+			preparingComplete = false;
 			opened = false;
 		}catch(Exception e){
 			success = false;
@@ -100,14 +105,11 @@ public class SoundPlayer implements OnCompletionListener {
 		try {
 			if (paused) { // file was paused
 				usedPlayer.start();
-													// position
-				soundPosition = 0; // reset position to zero
 				paused = false;
 			}else{
-				if (!usedPlayer.isPlaying()) {
-					usedPlayer.prepare();
+				while((!preparingComplete) || (usedPlayer.isPlaying())){}
+					soundFilePeriod = (long) usedPlayer.getDuration();
 					usedPlayer.start();
-				}
 			}
 		} catch (Exception e) {
 			success = false;
@@ -169,7 +171,8 @@ public class SoundPlayer implements OnCompletionListener {
 	}
 
 	@Override
-	public void onCompletion(MediaPlayer arg0) {
+	public void onPrepared(MediaPlayer arg0) {
 		// TODO Auto-generated method stub
+		preparingComplete = true;
 	}	
 }
