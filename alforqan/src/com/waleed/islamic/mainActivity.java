@@ -203,30 +203,36 @@ public class mainActivity extends Activity implements OnClickListener,
 			break;
 		// sound play button event
 		case R.id.playButton:
-			ControlClass.setSshikh("minshawi/");  // set shikh
-			// check if thread paused
-			if(paused){
-				paused = false;
-			}
-			// initialize the sound playing thread
-			dbHandlingThread = null;
-			System.gc();
-			dbHandlingThread = new Thread(){
-				@Override
-				public void run() {
-					ControlClass.playWithSelectedSettings(suraNameIndex + 1, startAya + 1, endAya + 1, stopPeriod + 1, ayaRepeat, groupRepeat, this, usedHandler);
+			if(ControlClass.soundThreadPaused){
+				synchronized (this) {
+					ControlClass.soundThreadPaused = false;
 				}
-				
-			};
-			dbHandlingThread.start();
-			//ControlClass.playWithSelectedSettings(suraNameIndex + 1, startAya + 1, endAya + 1, stopPeriod, ayaRepeat, groupRepeat);
-			//ControlClass.testMethod("2", "2", 1);
+			} else {
+				ControlClass.setSshikh("minshawi/"); // set shikh
+				// check if thread paused
+				if (paused) {
+					paused = false;
+				}
+				// initialize the sound playing thread
+				dbHandlingThread = null;
+				System.gc();
+				dbHandlingThread = new Thread() {
+					@Override
+					public void run() {
+						ControlClass.playWithSelectedSettings(
+								suraNameIndex + 1, startAya + 1, endAya + 1,
+								stopPeriod + 1, ayaRepeat, groupRepeat, this,
+								usedHandler);
+					}
+
+				};
+				dbHandlingThread.start();
+			}
 			break;
 		// sound pause button event
 		case R.id.pauseButton:
-			if(dbHandlingThread != null){
-				 // Pause the thread
-				paused = true;
+			synchronized (this) {
+				ControlClass.soundThreadPaused = true;
 			}
 			break;
 		}
