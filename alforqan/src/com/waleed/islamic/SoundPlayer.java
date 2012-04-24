@@ -5,8 +5,6 @@ package com.waleed.islamic;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 
@@ -33,7 +31,7 @@ public class SoundPlayer implements OnPreparedListener{
 		soundFilePeriod = 0;
 		preparingComplete = false;
 		usedPlayer = new MediaPlayer();
-		usedPlayer.create(callingActivityContext, Uri.EMPTY);
+		MediaPlayer.create(callingActivityContext, Uri.EMPTY);
 		// set the player completion listener to play the next sound
 		usedPlayer.setOnPreparedListener(this);
 	}

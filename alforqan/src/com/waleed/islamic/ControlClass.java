@@ -4,7 +4,6 @@
 package com.waleed.islamic;
 
 import android.content.Context;
-import android.media.AsyncPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -18,7 +17,6 @@ import android.os.Message;
 public class ControlClass {
 	
 	// static locals
-	private static Context usedContext;
 	private static SoundPlayer usedSoundPlayer;
 	private static dbDAL usedDBDAL;
 	private static String baseDirectory;
@@ -32,7 +30,6 @@ public class ControlClass {
 	 * @param shikhFolderPath : the folder containing the selected sikh sound files ended with \\
 	 */
 	public static void initializeControlClass(Context thisContext){
-		usedContext = thisContext;
 		usedSoundPlayer = new SoundPlayer(thisContext);
 	}
 	
