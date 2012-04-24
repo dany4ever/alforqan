@@ -5,6 +5,7 @@ package com.waleed.islamic;
  */
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -133,6 +134,9 @@ public class mainActivity extends Activity implements OnClickListener,
 		PowerManager tempPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         usedPowerManager = tempPowerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "DoNotDimScreen");
         usedPowerManager.acquire();
+        
+        // tell the system to enable hardware audio buttons in my program, so wedon't need to override them
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         
 		// initialize spinners adapters
 		suraNameAdapter = new ArrayAdapter<String>(this,
@@ -287,16 +291,6 @@ public class mainActivity extends Activity implements OnClickListener,
 			break;
 		case KeyEvent.KEYCODE_MENU:  // back button, close the program
 			settingsSlidingDrawer.toggle();
-			success = true;
-			break;
-		case KeyEvent.KEYCODE_VOLUME_UP: // volume up event
-			// audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-			// AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
-			success = true;
-			break;
-		case KeyEvent.KEYCODE_VOLUME_DOWN:  // volume down event
-			// audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-			// AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
 			success = true;
 			break;
 		default:
