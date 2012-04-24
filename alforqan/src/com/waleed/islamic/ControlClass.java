@@ -4,6 +4,7 @@
 package com.waleed.islamic;
 
 import android.content.Context;
+import android.media.AsyncPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -99,7 +100,8 @@ public class ControlClass {
 		// main method function
 		for (int groupIndex = 0; groupIndex <= qroupRepeat; groupIndex++) { // group repeating loop
 			for (int currentAya = startAya; currentAya <= endAya; currentAya++) { // loop at all ayas
-				filePath = constructAyaSoundFilePath(Integer.toString(suraIndex), Integer.toString(currentAya));
+				// check if the file is basmala open it
+			    filePath = constructAyaSoundFilePath(Integer.toString(suraIndex), Integer.toString(currentAya)); // other ayas sounds
 				ayaText = getAyaText(Integer.toString(suraIndex), Integer.toString(currentAya));
 				usedBundle.clear();
 				usedBundle.putString("text", ayaText);
@@ -109,7 +111,7 @@ public class ControlClass {
 				for (int ayaRepeatIndex = 0; ayaRepeatIndex <= ayaRepeat; ayaRepeatIndex++) { // aya repeating loop
 					usedSoundPlayer.playSoundFile(filePath);
 						try {
-							thisThread.sleep((usedSoundPlayer.soundFilePeriod + 10) * stopPeriod);
+							Thread.sleep((usedSoundPlayer.soundFilePeriod + 10) * stopPeriod);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -119,21 +121,4 @@ public class ControlClass {
 		}
 		return success;
 	}
-	
-	// TODO test only-remove
-	public static void testMethod(String sura, String aya, int mode){
-		String filePath;
-		filePath = constructAyaSoundFilePath(sura, aya);
-		switch(mode){
-		case 1:
-			usedSoundPlayer.playSoundFile(filePath);
-			break;
-		case 2:
-			usedSoundPlayer.pauseSoundFile();
-			break;
-		}
-	}
-	
-	// the volume keys listener
-	
 }
