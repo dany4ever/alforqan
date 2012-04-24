@@ -240,7 +240,7 @@ public class mainActivity extends Activity implements OnClickListener,
 	private void getEnteredValues() {
 		suraNameIndex = suraSelectSpinner.getSelectedItemPosition();
 		startAya = startAyaSelectSpinner.getSelectedItemPosition();
-		endAya = endAyaSelectSpinner.getSelectedItemPosition();
+		endAya = startAya + endAyaSelectSpinner.getSelectedItemPosition();
 		stopPeriod = stopPeriodSelectSpinner.getSelectedItemPosition();
 		if (ayaRepeatNumEditText.getText().toString().length() != 0) { // check if left blank
 			ayaRepeat = Integer.parseInt(ayaRepeatNumEditText.getText().toString());
@@ -259,8 +259,6 @@ public class mainActivity extends Activity implements OnClickListener,
 		// main method job
 		mainPartLayout.setVisibility(4); // hide the main part
 		collapseButton.setText(R.string.collapse_button_folded); // write suitable text to the button
-		// set the ayas numbers
-		getEnteredValues();
 	}
 
 	/* (non-Javadoc)
