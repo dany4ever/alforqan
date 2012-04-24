@@ -20,7 +20,7 @@ public class ControlClass {
 	private static SoundPlayer usedSoundPlayer;
 	private static dbDAL usedDBDAL;
 	private static String baseDirectory;
-	public static boolean paused;
+	public static boolean soundThreadPaused;
 	private static String soundFolderInSD = ""; // holds the application folder in the SD card, this folder contains
 												// all application sounds
 	
@@ -104,6 +104,7 @@ public class ControlClass {
 				usedBundle.putString("text", ayaText);
 				msg = new Message();
 				msg.setData(usedBundle);
+				while(ControlClass.soundThreadPaused){} // pause the thread before typing the new aya text if pause button clicked
 				usedHandler.sendMessage(msg);
 				for (int ayaRepeatIndex = 0; ayaRepeatIndex <= ayaRepeat; ayaRepeatIndex++) { // aya repeating loop
 					usedSoundPlayer.playSoundFile(filePath);
