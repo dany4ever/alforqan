@@ -3,6 +3,8 @@ package com.waleed.islamic;
 /**
  * 'imports
  */
+import java.io.IOException;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +14,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,7 +32,7 @@ import android.widget.TextView;
  * @author waleed0 main activity
  */
 public class mainActivity extends Activity implements OnClickListener,
-		OnDrawerOpenListener, OnDrawerCloseListener {
+		OnDrawerOpenListener, OnDrawerCloseListener, OnItemSelectedListener {
 
 	/**
 	 * local fields
@@ -162,6 +166,9 @@ public class mainActivity extends Activity implements OnClickListener,
 		// sliding drawer listeners
 		settingsSlidingDrawer.setOnDrawerOpenListener(this);
 		settingsSlidingDrawer.setOnDrawerCloseListener(this);
+		// spiners listeners
+		suraSelectSpinner.setOnItemSelectedListener(this);
+		startAyaSelectSpinner.setOnItemSelectedListener(this);
 	}
 
 	void initializeAdapter(ArrayAdapter<String> usedAdapter, String[] usedString) {
@@ -193,10 +200,11 @@ public class mainActivity extends Activity implements OnClickListener,
 			ControlClass.setSshikh("minshawi/");  // set shikh
 			// check if thread paused
 			if(paused){
-				dbHandlingThread.notify();
 				paused = false;
 			}
 			// initialize the sound playing thread
+			dbHandlingThread = null;
+			System.gc();
 			dbHandlingThread = new Thread(){
 				@Override
 				public void run() {
@@ -251,6 +259,8 @@ public class mainActivity extends Activity implements OnClickListener,
 		// main method job
 		mainPartLayout.setVisibility(4); // hide the main part
 		collapseButton.setText(R.string.collapse_button_folded); // write suitable text to the button
+		// set the ayas numbers
+		getEnteredValues();
 	}
 
 	/* (non-Javadoc)
@@ -263,6 +273,10 @@ public class mainActivity extends Activity implements OnClickListener,
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:  // back button, close the program
 			this.finish();
+			success = true;
+			break;
+		case KeyEvent.KEYCODE_MENU:  // back button, close the program
+			settingsSlidingDrawer.toggle();
 			success = true;
 			break;
 		case KeyEvent.KEYCODE_VOLUME_UP: // volume up event
@@ -279,6 +293,44 @@ public class mainActivity extends Activity implements OnClickListener,
 			success = false;
 		}
 		return success;
+	}
+
+	@Override
+	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
+			long arg3) {
+		switch (arg0.getId()) {
+		case R.id.suraSelectSpiner:  // set start and end aya selection spiners strings
+			dbDAL tempDB = new dbDAL(this); // initialize the db
+			tempDB.openDataBase(); // opens the DB
+			// Get the num of ayas in the current sura (initially the first
+			// sura)
+			int count = tempDB.getSuraNumOfAyas(arg2 + 1);
+			// fill the array with ayas in the sura
+			ayaNumStrings = new String[count];
+			for (int i = 0; i < count; i++) {
+				ayaNumStrings[i] = Integer.toString(i + 1);
+			}
+			startAyaAdapter.clear();
+			initializeAdapter(startAyaAdapter, ayaNumStrings);
+			endAyaAdapter.clear();
+			initializeAdapter(endAyaAdapter, ayaNumStrings);
+			tempDB.close();
+			break;
+		case R.id.startAyaSelectSpinner: // set end aya selection spiner strings
+			ayaNumStrings = new String[ayaNumStrings.length - startAyaSelectSpinner.getSelectedItemPosition()];
+			for(int i = 0; i < startAyaSelectSpinner.getCount() - startAyaSelectSpinner.getSelectedItemPosition(); i++){
+				ayaNumStrings[i] = Integer.toString(startAyaSelectSpinner.getSelectedItemPosition() + i + 1);
+			}
+			endAyaAdapter.clear();
+			initializeAdapter(endAyaAdapter, ayaNumStrings);
+			break;
+		}
+	}
+
+	@Override
+	public void onNothingSelected(AdapterView<?> arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

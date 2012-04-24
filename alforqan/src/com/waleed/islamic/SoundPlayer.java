@@ -20,7 +20,6 @@ public class SoundPlayer implements OnPreparedListener{
 	 * locals
 	 */
 	private MediaPlayer usedPlayer;
-	private boolean paused;
 	private boolean opened;
 	public long soundFilePeriod;
 	private volatile boolean preparingComplete;
@@ -30,7 +29,6 @@ public class SoundPlayer implements OnPreparedListener{
 	 * default constructor, initialize the object
 	 */
 	public SoundPlayer(Context callingActivityContext){
-		paused = false;
 		opened = false;
 		soundFilePeriod = 0;
 		preparingComplete = false;
@@ -47,11 +45,6 @@ public class SoundPlayer implements OnPreparedListener{
 	 */
 	private boolean openSoundFile(String filePath){
 		boolean success = true;
-		paused = false;
-		if(usedPlayer.isPlaying()){
-			usedPlayer.stop();  // stop the currently playing file
-			opened = false;
-		}
 		try {
 			usedPlayer.reset();
 			usedPlayer.setDataSource(filePath);
@@ -72,7 +65,6 @@ public class SoundPlayer implements OnPreparedListener{
 	 */
 	public boolean closSoundFile(){
 		boolean success = true;
-		paused = false;
 		if(usedPlayer.isPlaying()){
 			usedPlayer.stop();  // stop the currently playing file
 		}
@@ -103,50 +95,10 @@ public class SoundPlayer implements OnPreparedListener{
 			openSoundFile(filePath);
 		}
 		try {
-			if (paused) { // file was paused
-				usedPlayer.start();
-				paused = false;
-			}else{
-				while((!preparingComplete) || (usedPlayer.isPlaying())){}
-					soundFilePeriod = (long) usedPlayer.getDuration();
-					usedPlayer.start();
+			while ((!preparingComplete) || (usedPlayer.isPlaying())) {
 			}
-		} catch (Exception e) {
-			success = false;
-			e.printStackTrace();
-		}
-		return success;
-	}
-	
-	/**
-	 * pause a file that is now playing, if played again it will 
-	 * continue from the place it was stopped at
-	 * @return a boolean value indicates if the operation succeeded or not
-	 */
-	public boolean pauseSoundFile(){
-		boolean success = true;
-		if(usedPlayer.isPlaying()){
-			try{
-				paused = true;  // set pause flag
-				usedPlayer.pause();  // release the current file
-			}catch(Exception e){
-				paused = false;  // reset pause flag
-				success = false;
-				e.printStackTrace();
-			}
-		}
-		return success;
-	}
-	
-	/**
-	 * stop a file that is now playing, if played again it will 
-	 * continue from the start of the file
-	 * @return a boolean value indicates if the operation succeeded or not
-	 */
-	public boolean stopSoundFile(){
-		boolean success = true;
-		try {
-			usedPlayer.stop();
+			soundFilePeriod = (long) usedPlayer.getDuration();
+			usedPlayer.start();
 		} catch (Exception e) {
 			success = false;
 			e.printStackTrace();
@@ -173,6 +125,8 @@ public class SoundPlayer implements OnPreparedListener{
 	@Override
 	public void onPrepared(MediaPlayer arg0) {
 		// TODO Auto-generated method stub
-		preparingComplete = true;
+		synchronized (this) {
+			preparingComplete = true;
+		}
 	}	
 }
