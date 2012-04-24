@@ -3,12 +3,12 @@ package com.waleed.islamic;
 /**
  * 'imports
  */
-import java.io.IOException;
-
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -59,6 +59,8 @@ public class mainActivity extends Activity implements OnClickListener,
 	SlidingDrawer settingsSlidingDrawer;
 	// layouts
 	LinearLayout mainPartLayout;
+	// power manager to prevent the screen from being locked
+	private PowerManager.WakeLock usedPowerManager;
 	// spinner array adapters
 	ArrayAdapter<String> startAyaAdapter, suraNameAdapter, endAyaAdapter,
 			stopPeriodAdapter;
@@ -127,7 +129,11 @@ public class mainActivity extends Activity implements OnClickListener,
 		ayaRepeatNumEditText = (EditText) findViewById(R.id.ayarepeatenteryEditText);
 		groupRepeatNumEditText = (EditText) findViewById(R.id.grouprepeatenteryEditText);
 		quranTextDisplayTextView = (TextView) findViewById(R.id.quranDisplayTextView);
-
+		// PowerManager
+		PowerManager tempPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        usedPowerManager = tempPowerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "DoNotDimScreen");
+        usedPowerManager.acquire();
+        
 		// initialize spinners adapters
 		suraNameAdapter = new ArrayAdapter<String>(this,
 				R.layout.textviewlayout);
