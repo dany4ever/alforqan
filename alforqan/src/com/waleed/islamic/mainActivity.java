@@ -11,6 +11,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -38,8 +41,9 @@ public class mainActivity extends Activity implements OnClickListener,
 	/**
 	 * local fields
 	 */
-	// buttons
-	Button collapseButton;
+	// Menu items
+	MenuItem menuButtonPreferences;
+	MenuItem menuButtonAbout;
 	// image buttons
 	ImageButton quranTextPlusZoomButton;  // zoom in button
 	ImageButton quranTextMinusZoomButton;  // zoom out button
@@ -57,7 +61,8 @@ public class mainActivity extends Activity implements OnClickListener,
 	Spinner endAyaSelectSpinner;
 	Spinner stopPeriodSelectSpinner;
 	// sliding drawers
-	SlidingDrawer settingsSlidingDrawer;
+	SlidingDrawer preferencesSlidingDrawer;
+	SlidingDrawer aboutSlidingDrawer;
 	// layouts
 	LinearLayout mainPartLayout;
 	// power manager to prevent the screen from being locked
@@ -110,7 +115,6 @@ public class mainActivity extends Activity implements OnClickListener,
 	private void initializeGui() {
 		// Get gui references
 		// buttons & image buttons
-		collapseButton = (Button) findViewById(R.id.collapseToggleButton);
 		quranTextPlusZoomButton = (ImageButton) findViewById(R.id.quranTextZoomPlusButton);
 		quranTextMinusZoomButton = (ImageButton) findViewById(R.id.quranTextZoomMinusButton);
 		soundPlayImageButton = (ImageButton) findViewById(R.id.playButton);
@@ -123,7 +127,8 @@ public class mainActivity extends Activity implements OnClickListener,
 		endAyaSelectSpinner = (Spinner) findViewById(R.id.endAyaSelectSpinner);
 		stopPeriodSelectSpinner = (Spinner) findViewById(R.id.stopPeriodSelectSpinner);
 		// sliding drawers
-		settingsSlidingDrawer = (SlidingDrawer) findViewById(R.id.settingsSlidingDrawer);
+		preferencesSlidingDrawer = (SlidingDrawer) findViewById(R.id.preferencesSlidingDrawer);
+		aboutSlidingDrawer = (SlidingDrawer) findViewById(R.id.aboutSlidingDrawer);
 		// layouts
 		mainPartLayout = (LinearLayout) findViewById(R.id.mainBlock);
 		// Edit views & text views
@@ -173,9 +178,11 @@ public class mainActivity extends Activity implements OnClickListener,
 		quranTextMinusZoomButton.setOnClickListener(this);
 		soundPlayImageButton.setOnClickListener(this);
 		soundPauseImageButton.setOnClickListener(this);
-		// sliding drawer listeners
-		settingsSlidingDrawer.setOnDrawerOpenListener(this);
-		settingsSlidingDrawer.setOnDrawerCloseListener(this);
+		// sliding drawers listeners
+		preferencesSlidingDrawer.setOnDrawerOpenListener(this);
+		preferencesSlidingDrawer.setOnDrawerCloseListener(this);
+		aboutSlidingDrawer.setOnDrawerOpenListener(this);
+		aboutSlidingDrawer.setOnDrawerCloseListener(this);
 		// spiners listeners
 		suraSelectSpinner.setOnItemSelectedListener(this);
 		startAyaSelectSpinner.setOnItemSelectedListener(this);
@@ -245,7 +252,6 @@ public class mainActivity extends Activity implements OnClickListener,
 	@Override
 	public void onDrawerClosed() {
 		mainPartLayout.setVisibility(0); // else show the main part
-		collapseButton.setText(R.string.collapse_button_collapsed); // write suitable text to the button
 		// getting the values entered by the user
 		getEnteredValues();
 	}
@@ -274,7 +280,6 @@ public class mainActivity extends Activity implements OnClickListener,
 	public void onDrawerOpened() {
 		// main method job
 		mainPartLayout.setVisibility(4); // hide the main part
-		collapseButton.setText(R.string.collapse_button_folded); // write suitable text to the button
 	}
 
 	/* (non-Javadoc)
@@ -286,13 +291,11 @@ public class mainActivity extends Activity implements OnClickListener,
 		boolean success = true;
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:  // back button, close the program
+			usedPowerManager.release(); // return the system to the initial state
 			this.finish();
 			success = true;
 			break;
-		case KeyEvent.KEYCODE_MENU:  // back button, close the program
-			settingsSlidingDrawer.toggle();
-			success = true;
-			break;
+			// TODO remove
 		default:
 			success = false;
 		}
@@ -337,6 +340,48 @@ public class mainActivity extends Activity implements OnClickListener,
 		
 	}
 	
-	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		super.onCreateOptionsMenu(menu);
+		MenuInflater usedMenuInflater = getMenuInflater();
+		usedMenuInflater.inflate(R.menu.option_menu, menu);
+		menuButtonPreferences = menu.findItem(R.id.preferencesButton);
+		menuButtonAbout = menu.findItem(R.id.aboutButton);
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()){
+		case R.id.aboutButton:
+			if(aboutSlidingDrawer.isOpened()){
+				menuButtonAbout.setTitle(R.string.about_string); // write suitable text to the button
+				menuButtonPreferences.setEnabled(true);
+			}else{
+				menuButtonAbout.setTitle(R.string.back_string); // write suitable text to the button
+				menuButtonPreferences.setEnabled(false);
+			}
+			aboutSlidingDrawer.animateToggle();
+			break;
+		case R.id.preferencesButton:
+			if(preferencesSlidingDrawer.isOpened()){
+				menuButtonPreferences.setTitle(R.string.preferences_string); // write suitable text to the button
+				menuButtonAbout.setEnabled(true);
+			}else{
+				menuButtonPreferences.setTitle(R.string.back_string); // write suitable text to the button
+				menuButtonAbout.setEnabled(false);
+			}
+			preferencesSlidingDrawer.animateToggle();
+			break;
+		}
+		return false;
+	}
 	
 }
