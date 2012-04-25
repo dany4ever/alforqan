@@ -102,20 +102,20 @@
 
         </LinearLayout>
     </LinearLayout>
-
+
     <SlidingDrawer
-        android:id="@+id/settingsSlidingDrawer"
+        android:id="@+id/preferencesSlidingDrawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:content="@+id/content"
         android:handle="@+id/collapseToggleButton" >
-
+
         <Button
             android:id="@+id/collapseToggleButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/collapse_button_collapsed" />
-
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/preferences_string" />
+
         <LinearLayout
             android:id="@+id/content"
             android:layout_width="match_parent"
@@ -257,6 +257,26 @@
 
         </LinearLayout>
 
+    </SlidingDrawer>
+
+    <SlidingDrawer
+        android:id="@+id/aboutSlidingDrawer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:content="@+id/content"
+        android:handle="@+id/handle" >
+
+        <Button
+            android:id="@+id/handle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="Handle" />
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </LinearLayout>
     </SlidingDrawer>
 
 </FrameLayout>
