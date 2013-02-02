@@ -94,6 +94,7 @@ public class ControlClass {
 		String ayaText;
 		Bundle usedBundle = new Bundle();
 		Message msg;
+		msg = Message.obtain();
 		// main method function
 		for (int groupIndex = 0; groupIndex <= qroupRepeat; groupIndex++) { // group repeating loop
 			for (int currentAya = startAya; currentAya <= endAya; currentAya++) { // loop at all ayas
@@ -102,7 +103,6 @@ public class ControlClass {
 				ayaText = getAyaText(Integer.toString(suraIndex), Integer.toString(currentAya));
 				usedBundle.clear();
 				usedBundle.putString("text", ayaText);
-				msg = new Message();
 				msg.setData(usedBundle);
 				while(ControlClass.soundThreadPaused){} // pause the thread before typing the new aya text if pause button clicked
 				usedHandler.sendMessage(msg);
